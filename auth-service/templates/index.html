@@ -77,33 +77,39 @@
             }
         }
 
-        async function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+    async function login() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
 
-            try {
-                const response = await fetch(`${AUTH_URL}/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+        try {
+            const response = await fetch(`${AUTH_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-                const data = await response.json();
+            const data = await response.json();
 
-                if (response.ok) {
-                    localStorage.setItem('token', data.access_token);
+            if (response.ok) {
+                localStorage.setItem('token', data.access_token);
+
+                console.log("Zalogowano pomyślnie!");
+
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
                     document.getElementById('login-section').style.display = 'none';
                     document.getElementById('dashboard-section').style.display = 'block';
                     document.getElementById('welcome-msg').innerText = `Zalogowano jako: ${email}`;
-                    document.getElementById('token-display').innerText = `Twój token: ${data.access_token.substring(0, 50)}...`;
-                } else {
-                    const errorMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
-                    alert('Błąd: ' + (errorMsg || 'Nieprawidłowe dane logowania'));
                 }
-            } catch (err) {
-                alert('Brak połączenia z serwerem auth-service');
+            } else {
+                const errorMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+                alert('Błąd: ' + (errorMsg || 'Nieprawidłowe dane logowania'));
             }
+        } catch (err) {
+            alert('Brak połączenia z serwerem auth-service');
         }
+}
 
         function logout() {
             localStorage.removeItem('token');
