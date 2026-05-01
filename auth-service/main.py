@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, Depends, HTTPException, status, Request
+﻿from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -51,14 +51,25 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     return {"message": "Uzytkownik zarejestrowany"}
 
 @app.post("/login")
-def login(user: schemas.UserLogin, db: Session = Depends(database.get_db)):
+def login(response: Response, user: schemas.UserLogin, db: Session = Depends(database.get_db)):
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     
     if not db_user or not pwd_context.verify(user.password, db_user.password_hash):
         raise HTTPException(status_code=401, detail="Bledne dane logowania")
     
     token = create_access_token(data={"sub": db_user.email, "role": db_user.role})
-    return {"access_token": token, "token_type": "bearer"}
+    response.set_cookie(
+        key="access_token", 
+        value=token, 
+        httponly=True, 
+        max_age=3600,
+        samesite="lax"
+    )
+    
+    return {
+        "message": "Zalogowano pomyślnie", 
+        "redirect_url": "http://localhost:8002/rooms" # Gdzie wysyłamy usera
+    }
 
 @app.get("/auth/verify")
 def verify_token(token: str):
