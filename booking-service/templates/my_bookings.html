@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Moje Rezerwacje - Roomly</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 900px;">
+        <h1>Twoje Rezerwacje</h1>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr style="background: #764ba2; color: white;">
+                    <th style="padding: 10px;">ID</th>
+                    <th style="padding: 10px;">Szczegóły (Status)</th>
+                    <th style="padding: 10px;">Akcje</th>
+                </tr>
+            </thead>
+           <tbody>
+    {% for b in bookings %}
+    <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 10px; text-align: center;">{{ b.id }}</td>
+        <td style="padding: 10px;">{{ b.status }}</td>
+        <td style="padding: 10px; text-align: center;">
+            <button onclick="deleteBooking({{ b.id }})" 
+                    style="background: #ff4b2b; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">
+                Usuń
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+        </table>
+        <a href="/rooms" style="display: block; margin-top: 20px; text-align: center; color: #764ba2;">Wróć do sal</a>
+    </div>
+
+    <script>
+        async function deleteBooking(id) {
+            if (confirm("Czy na pewno chcesz usunąć tę rezerwację?")) {
+                const response = await fetch(`/delete_booking/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    location.reload(); 
+                } else {
+                    alert("Błąd podczas usuwania.");
+                }
+            }
+        }
+    </script>
+</body>
+</html>

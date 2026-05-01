@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿from fastapi import FastAPI, Depends, HTTPException, status, Request
+﻿from fastapi import FastAPI, Depends, HTTPException, status, Request, Response
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -52,14 +51,25 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     return {"message": "Uzytkownik zarejestrowany"}
 
 @app.post("/login")
-def login(user: schemas.UserLogin, db: Session = Depends(database.get_db)):
+def login(response: Response, user: schemas.UserLogin, db: Session = Depends(database.get_db)):
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     
     if not db_user or not pwd_context.verify(user.password, db_user.password_hash):
         raise HTTPException(status_code=401, detail="Bledne dane logowania")
     
     token = create_access_token(data={"sub": db_user.email, "role": db_user.role})
-    return {"access_token": token, "token_type": "bearer"}
+    response.set_cookie(
+        key="access_token", 
+        value=token, 
+        httponly=True, 
+        max_age=3600,
+        samesite="lax"
+    )
+    
+    return {
+        "message": "Zalogowano pomyślnie", 
+        "redirect_url": "http://localhost:8002/rooms" 
+    }
 
 @app.get("/auth/verify")
 def verify_token(token: str):
@@ -68,27 +78,3 @@ def verify_token(token: str):
         return payload
     except JWTError:
         raise HTTPException(status_code=401, detail="Nieprawidlowy token")
-=======
-﻿from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
-
-app = FastAPI()
-
-app.mount("/static", StaticFiles(directory="auth-service/static"), name="static")
-templates = Jinja2Templates(directory="auth-service/templates")
-
-@app.get("/", response_class=HTMLResponse)
-async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-@app.get("/api/status")
-def get_status():
-    return {
-        "service": "User-Service",
-        "version": "1.0.0",
-        "status": "operational",
-        "database_connected": True
-    }
->>>>>>> 94806f373e19309aa072b1b3e2b62e698309a640

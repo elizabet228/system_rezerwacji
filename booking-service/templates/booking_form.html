@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Roomly - Szczegóły Rezerwacji</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Rezerwacja sali: {{ room.name }}</h1>
+        
+        <form id="bookingForm" action="/confirm_booking/{{ room.id }}" method="post">
+            <div style="margin-bottom: 10px;">
+                <label>Imię:</label><br>
+                <input type="text" name="first_name" required style="width: 100%; padding: 8px;">
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label>Nazwisko:</label><br>
+                <input type="text" name="last_name" required style="width: 100%; padding: 8px;">
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label>E-mail kontaktowy:</label><br>
+                <input type="email" name="contact_email" required style="width: 100%; padding: 8px;">
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label>Dzień rezerwacji:</label><br>
+                <input type="date" name="booking_date" required style="width: 100%; padding: 8px;">
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label>Godzina:</label><br>
+                <input type="time" name="booking_time" required style="width: 100%; padding: 8px;">
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <label>Telefon:</label><br>
+                <input type="text" name="contact_info" placeholder="Np. +48 123 456 789" required style="width: 100%; padding: 8px;">
+            </div>
+
+            <button type="submit" class="btn-book" style="width: 100%; margin-top: 10px;">Potwierdzam Rezerwację</button>
+        </form>
+
+
+        <div id="responseMessage" style="margin-top: 20px; text-align: center; font-weight: bold; min-height: 24px;"></div>
+
+        <a href="/rooms" style="display: block; margin-top: 15px; text-align: center; color: #764ba2;">Wróć do listy sal</a>
+    </div>
+
+<script>
+    const form = document.getElementById('bookingForm');
+    const messageDiv = document.getElementById('responseMessage');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        
+        messageDiv.innerText = "Wysyłanie...";
+        messageDiv.style.color = "blue";
+
+        const formData = new FormData(form);
+        const actionUrl = form.getAttribute('action');
+
+        try {
+            const response = await fetch(actionUrl, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                messageDiv.innerText = "Sukces! Twoja rezerwacja została zapisana.";
+                messageDiv.style.color = "green";
+                form.style.display = "none"; 
+            } else {
+               
+                const errorMsg = await response.text();
+                messageDiv.innerText = "Błąd: " + errorMsg;
+                messageDiv.style.color = "red";
+            }
+        } catch (error) {
+            messageDiv.innerText = "Wystąpił błąd połączenia z serwerem.";
+            messageDiv.style.color = "red";
+        }
+    });
+</script>
+</body>
+</html>

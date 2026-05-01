@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Roomly - Dostępne Pokoje</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="user-info">Zalogowano jako: <strong>{{ user }}</strong></div>
+        <a href="/my_bookings">Pokaż moje rezerwacje</a>
+        <h1>Dostępne Pokoje</h1>
+        
+        <div id="rooms-list">
+            {% for room in rooms %}
+            <div class="room-card">
+                <div>
+                    <h3>{{ room.name }}</h3>
+                    <p>Lokalizacja: {{ room.location }}</p>
+                    <p>Pojemność: {{ room.capacity }} osób</p>
+                    <p>Cena: {{ room.price }} PLN / godz</p>
+                </div>
+               <a href="/book/{{ room.id }}" class="btn-book" style="text-decoration: none; text-align: center; display: block;">
+        Zarezerwuj
+    </a>
+</div>
+{% endfor %}
+
+        <div style="margin-top: 20px; text-align: center;">
+            <a href="http://localhost:8001" style="color: #764ba2; text-decoration: none;">Wyloguj się</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -11,3 +11,5 @@ mysql_data/
 
 .DS_Store
 Thumbs.db
+
+db_data/
