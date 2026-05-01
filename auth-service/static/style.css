@@ -1,19 +1,35 @@
 body {
     margin: 0;
     padding: 0;
+<<<<<<< HEAD
     font-family: 'Bodoni', serif; 
     color: #6139aa;
     background-color: white;
 }
 
 .container {
+=======
+   font-family: 'Bodoni', cursive;
+    color: #6139aa;
+}
+
+.main-container {
+>>>>>>> 94806f373e19309aa072b1b3e2b62e698309a640
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+<<<<<<< HEAD
 }
 
 .form-card {
+=======
+    background-color: white;
+}
+
+
+.card {
+>>>>>>> 94806f373e19309aa072b1b3e2b62e698309a640
     background: whitesmoke;
     padding: 40px;
     border-radius: 15px;
@@ -22,6 +38,7 @@ body {
     width: 350px;
 }
 
+<<<<<<< HEAD
 .input-group {
     display: flex;
     flex-direction: column;
@@ -33,10 +50,25 @@ body {
 input {
     width: 100%;
     box-sizing: border-box; 
+=======
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;   
+    gap: 15px;              
+    margin-top: 20px;
+}
+
+
+.login-form input {
+    width: 100%;            
+>>>>>>> 94806f373e19309aa072b1b3e2b62e698309a640
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 16px;
+<<<<<<< HEAD
     color: #6139aa;
 }
 
@@ -46,6 +78,12 @@ input::placeholder {
 }
 
 .btn-primary {
+=======
+}
+
+
+.login-form button {
+>>>>>>> 94806f373e19309aa072b1b3e2b62e698309a640
     width: 100%;
     padding: 12px;
     background-color: #cdb2ff;
@@ -54,6 +92,7 @@ input::placeholder {
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
+<<<<<<< HEAD
     font-size: 16px;
     transition: background-color 0.3s;
 }
@@ -92,4 +131,10 @@ input::placeholder {
 #welcome-msg {
     font-size: 1.2rem;
     margin-bottom: 10px;
+=======
+}
+
+.login-form button:hover {
+    background-color: #b594ff; 
+>>>>>>> 94806f373e19309aa072b1b3e2b62e698309a640
 }
