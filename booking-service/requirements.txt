@@ -2,6 +2,11 @@ fastapi
 uvicorn
 sqlalchemy
 pymysql
+mysql-connector-python
+python-multipart
 cryptography
 python-jose[cryptography]
-passlib[bcrypt]
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+email-validator
+jinja2
