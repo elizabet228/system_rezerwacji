@@ -68,7 +68,7 @@ def login(response: Response, user: schemas.UserLogin, db: Session = Depends(dat
     
     return {
         "message": "Zalogowano pomyślnie", 
-        "redirect_url": "http://localhost:8002/rooms" # Gdzie wysyłamy usera
+        "redirect_url": "http://localhost:8002/rooms" 
     }
 
 @app.get("/auth/verify")

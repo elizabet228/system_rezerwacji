@@ -16,6 +16,7 @@ class Room(Base):
     name = Column(String(100))
     capacity = Column(Integer)
     location = Column(String(255))
+    price = Column(Integer)
     is_active = Column(Boolean, default=True)
 
 class Booking(Base):
@@ -23,6 +24,6 @@ class Booking(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     room_id = Column(Integer, ForeignKey("rooms.id"))
-    start_time = Column(DateTime)
-    end_time = Column(DateTime)
-    status = Column(Enum('confirmed', 'cancelled'), default='confirmed')
+    start_time = Column(DateTime, nullable=True)
+    end_time = Column(DateTime, nullable=True)
+    status = Column(String(500), default='Nowa rezerwacja')
