@@ -1,12 +1,7 @@
 fastapi
 uvicorn
-<<<<<<< HEAD
 sqlalchemy
 pymysql
 cryptography
 python-jose[cryptography]
 passlib[bcrypt]
-=======
-jinja2
-python-multipart
->>>>>>> 94806f373e19309aa072b1b3e2b62e698309a640
