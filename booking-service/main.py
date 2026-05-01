@@ -101,10 +101,9 @@ async def confirm_booking(
     request: Request, 
     first_name: str = Form(...),    
     last_name: str = Form(...),     
-    contact_email: str = Form(...), 
     booking_date: str = Form(...), 
     booking_time: str = Form(...), 
-    contact_info: str = Form(...),
+    status: str = Form("Planowana"), 
     db: Session = Depends(get_db)
 ):
     try:
@@ -114,19 +113,22 @@ async def confirm_booking(
 
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_email = payload.get("sub")
-        
         user = db.query(models.User).filter(models.User.email == user_email).first()
 
-        info = f"Klient: {first_name} {last_name}, Data: {booking_date} {booking_time}"
+        start_dt = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
 
         new_booking = models.Booking(
             user_id=user.id if user else 1,
             room_id=room_id,
-            status=info
+            first_name=first_name,
+            last_name=last_name,
+            start_time=start_dt,
+            end_time=start_dt + timedelta(hours=1),
+            status=status
         )
         db.add(new_booking)
         db.commit()
-        return "OK" 
+        return RedirectResponse(url="/my_bookings", status_code=303) 
     except Exception as e:
         return Response(content=str(e), status_code=400)
     
@@ -151,3 +153,41 @@ async def delete_booking(booking_id: int, db: Session = Depends(get_db)):
     db.delete(booking)
     db.commit()
     return {"message": "Usunięto pomyślnie"}
+
+@app.get("/edit_booking/{booking_id}", response_class=HTMLResponse)
+async def edit_booking_page(booking_id: int, request: Request, db: Session = Depends(get_db)):
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Nie znaleziono rezerwacji")
+    
+    return templates.TemplateResponse("edit_booking.html", {"request": request, "booking": booking})
+
+from datetime import datetime, timedelta
+
+@app.post("/update_booking/{booking_id}")
+async def update_booking(
+    booking_id: int, 
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    status: str = Form(...),
+    booking_date: str = Form(...),
+    booking_time: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        return Response(content="Nie znaleziono rezerwacji", status_code=404)
+
+    booking.first_name = first_name
+    booking.last_name = last_name
+    booking.status = status
+
+    try:
+        new_datetime = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
+        booking.start_time = new_datetime
+        booking.end_time = new_datetime + timedelta(hours=1)
+    except ValueError:
+        return Response(content="Błędny format daty lub godziny", status_code=400)
+
+    db.commit()
+    return RedirectResponse(url="/my_bookings", status_code=303)

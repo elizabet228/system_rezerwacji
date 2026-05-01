@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Edytuj Dane Rezerwacji</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 500px; margin: 50px auto; padding: 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px;">
+        <h1>Edytuj rezerwację nr {{ booking.id }}</h1>
+        
+<form action="/update_booking/{{ booking.id }}" method="post">
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <div style="flex: 1;">
+            <label style="font-weight: bold; display: block;">Imię:</label>
+            <input type="text" name="first_name" value="{{ booking.first_name }}" required style="width: 100%; padding: 10px;">
+        </div>
+        <div style="flex: 1;">
+            <label style="font-weight: bold; display: block;">Nazwisko:</label>
+            <input type="text" name="last_name" value="{{ booking.last_name }}" required style="width: 100%; padding: 10px;">
+        </div>
+    </div>
+
+
+    <!-- Status / Opis -->
+    <div style="margin-bottom: 15px;">
+        <label style="font-weight: bold; display: block;">Status / Szczegóły:</label>
+        <input type="text" name="status" value="{{ booking.status }}" required style="width: 100%; padding: 10px;">
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <div style="flex: 1;">
+            <label style="font-weight: bold; display: block;">Data:</label>
+            <input type="date" name="booking_date" value="{{ booking.start_time.strftime('%Y-%m-%d') }}" required style="width: 100%; padding: 10px;">
+        </div>
+        <div style="flex: 1;">
+            <label style="font-weight: bold; display: block;">Godzina:</label>
+            <input type="time" name="booking_time" value="{{ booking.start_time.strftime('%H:%M') }}" required style="width: 100%; padding: 10px;">
+        </div>
+    </div>
+
+    <button type="submit" style="width: 100%; background: #4e54c8; color: white; padding: 12px; border: none; border-radius: 4px; cursor: pointer;">
+        Zapisz wszystkie zmiany
+    </button>
+</form>
+
+        <a href="/my_bookings" style="display: block; margin-top: 20px; text-align: center; color: #666; text-decoration: none; font-size: 14px;">
+            ← Anuluj i wróć do listy
+        </a>
+    </div>
+</body>
+</html>
