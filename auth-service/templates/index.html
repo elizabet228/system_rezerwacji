@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roomly - System Rezerwacji</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div id="login-section" class="form-card">
+            <h1>Witaj w Roomly</h1>
+            <p>Zaloguj się, aby zarządzać rezerwacjami</p>
+            <div class="input-group">
+                <input type="email" id="login-email" placeholder="Adres e-mail" required>
+                <input type="password" id="login-password" placeholder="Hasło" required>
+            </div>
+            <button onclick="login()" class="btn-primary">Zaloguj się</button>
+            <p class="switch-text">Nie masz konta? <a href="#" onclick="showRegister()">Zarejestruj się</a></p>
+        </div>
+
+        <div id="register-section" class="form-card" style="display: none;">
+            <h1>Stwórz konto</h1>
+            <p>Dołącz do nas i rezerwuj pokoje</p>
+            <div class="input-group">
+                <input type="text" id="reg-username" placeholder="Nazwa użytkownika" required>
+                <input type="email" id="reg-email" placeholder="Adres e-mail" required>
+                <input type="password" id="reg-password" placeholder="Hasło" required>
+            </div>
+            <button onclick="register()" class="btn-primary">Zarejestruj się</button>
+            <p class="switch-text">Masz już konto? <a href="#" onclick="showLogin()">Wróć do logowania</a></p>
+        </div>
+
+        <div id="dashboard-section" class="form-card" style="display: none;">
+            <h1>Panel Rezerwacji</h1>
+            <p id="welcome-msg"></p>
+            <div id="token-display" style="font-size: 0.7rem; word-break: break-all; color: #666; margin-bottom: 20px;"></div>
+            <button onclick="logout()" class="btn-secondary">Wyloguj się</button>
+        </div>
+    </div>
+
+    <script>
+        const AUTH_URL = 'http://localhost:8001';
+
+        function showRegister() {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('register-section').style.display = 'block';
+        }
+
+        function showLogin() {
+            document.getElementById('register-section').style.display = 'none';
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('dashboard-section').style.display = 'none';
+        }
+
+        async function register() {
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const response = await fetch(`${AUTH_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                if (response.ok) {
+                    alert('Konto utworzone pomyślnie! Możesz się zalogować.');
+                    showLogin();
+                } else {
+                    const data = await response.json();
+                    alert('Błąd: ' + (data.detail || 'Nie udało się zarejestrować'));
+                }
+            } catch (err) {
+                alert('Brak połączenia z serwerem auth-service');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch(`${AUTH_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('dashboard-section').style.display = 'block';
+                    document.getElementById('welcome-msg').innerText = `Zalogowano jako: ${email}`;
+                    document.getElementById('token-display').innerText = `Twój token: ${data.access_token.substring(0, 50)}...`;
+                } else {
+                    const errorMsg = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+                    alert('Błąd: ' + (errorMsg || 'Nieprawidłowe dane logowania'));
+                }
+            } catch (err) {
+                alert('Brak połączenia z serwerem auth-service');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            showLogin();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: roomly_db
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: ./auth-service
+    restart: on-failure
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      DATABASE_URL: mysql+pymysql://root@db/roomly_db
+
+  booking-service:
+    build: ./booking-service
+    restart: on-failure
+    ports:
+      - "8002:8000"
+    depends_on:
+      db:
+        condition: service_started
+    environment:
+      DATABASE_URL: mysql+pymysql://root@db/roomly_db

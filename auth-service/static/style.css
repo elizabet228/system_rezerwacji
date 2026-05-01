@@ -1,0 +1,95 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Bodoni', serif; 
+    color: #6139aa;
+    background-color: white;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.form-card {
+    background: whitesmoke;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    box-sizing: border-box; 
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    color: #6139aa;
+}
+
+input::placeholder {
+    color: #b594ff;
+    opacity: 0.7;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background-color: #cdb2ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #b594ff;
+}
+
+.btn-secondary {
+    width: 100%;
+    padding: 10px;
+    background-color: transparent;
+    color: #6139aa;
+    border: 1px solid #cdb2ff;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.switch-text {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+.switch-text a {
+    color: #6139aa;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.switch-text a:hover {
+    text-decoration: underline;
+}
+
+#welcome-msg {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
