@@ -13,6 +13,32 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Roomly - Conference Room Booking")
 
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "status": "error",
+            "code": exc.status_code,
+            "message": exc.detail,
+            "details": {}
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "code": 500,
+            "message": "Wystąpił nieoczekiwany błąd serwera",
+            "details": {"error": str(exc)}
+        }
+    )
+
 def seed_rooms():
     db = SessionLocal()
     if db.query(models.Room).count() == 0:
@@ -103,7 +129,7 @@ async def confirm_booking(
     last_name: str = Form(...),     
     booking_date: str = Form(...), 
     booking_time: str = Form(...), 
-    status: str = Form("Planowana"), 
+    status: str = Form("confirmed"), 
     db: Session = Depends(get_db)
 ):
     try:
@@ -134,16 +160,23 @@ async def confirm_booking(
     
 @app.get("/my_bookings", response_class=HTMLResponse)
 async def my_bookings(request: Request, db: Session = Depends(get_db)):
-   
     token = request.cookies.get("access_token")
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    user_email = payload.get("sub")
-    user = db.query(models.User).filter(models.User.email == user_email).first()
-
-    bookings = db.query(models.Booking).filter(models.Booking.user_id == user.id).all()
+    if not token:
+        raise HTTPException(status_code=401, detail="Brak tokena dostępu. Zaloguj się.")[cite: 1]
     
-    return templates.TemplateResponse("my_bookings.html", {"request": request, "bookings": bookings})
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_email = payload.get("sub")
+        user = db.query(models.User).filter(models.User.email == user_email).first()
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Użytkownik nie istnieje")
 
+        bookings = db.query(models.Booking).filter(models.Booking.user_id == user.id).all()
+        return templates.TemplateResponse("my_bookings.html", {"request": request, "bookings": bookings})
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Sesja wygasła")
+    
 @app.delete("/delete_booking/{booking_id}")
 async def delete_booking(booking_id: int, db: Session = Depends(get_db)):
     booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()

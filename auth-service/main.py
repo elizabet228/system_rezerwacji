@@ -11,6 +11,20 @@ from fastapi.responses import HTMLResponse
 
 app = FastAPI(title="Roomly Auth Service")
 
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "status": "error",
+            "code": exc.status_code,
+            "message": exc.detail,
+            "details": {}
+        }
+    )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -50,7 +64,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.get_db)):
     db.commit()
     return {"message": "Uzytkownik zarejestrowany"}
 
-@app.post("/login")
+@app.post("/login") 
 def login(response: Response, user: schemas.UserLogin, db: Session = Depends(database.get_db)):
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
     
