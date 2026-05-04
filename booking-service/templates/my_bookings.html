@@ -13,6 +13,7 @@
                 <tr style="background: #764ba2; color: white;">
                     <th style="padding: 10px;">ID</th>
                     <th style="padding: 10px;">Szczegóły (Status)</th>
+                    <th style="padding: 10px;">Termin</th>
                     <th style="padding: 10px;">Akcje</th>
                 </tr>
             </thead>
@@ -22,11 +23,16 @@
         <td style="padding: 10px; text-align: center;">{{ b.id }}</td>
         <td style="padding: 10px;">{{ b.status }}</td>
         <td style="padding: 10px; text-align: center;">
-            <button onclick="deleteBooking({{ b.id }})" 
-                    style="background: #ff4b2b; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">
-                Usuń
-            </button>
-        </td>
+    <a href="/edit_booking/{{ b.id }}" 
+       style="background: #4e54c8; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; text-decoration: none; font-size: 14px; margin-right: 5px; display: inline-block;">
+        Edytuj
+    </a>
+
+    <button onclick="deleteBooking({{ b.id }})" 
+            style="background: #ff4b2b; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;">
+        Usuń
+    </button>
+</td>
     </tr>
     {% endfor %}
 </tbody>

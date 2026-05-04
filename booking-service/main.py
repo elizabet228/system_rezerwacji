@@ -13,6 +13,32 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Roomly - Conference Room Booking")
 
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(HTTPException)
+async def custom_http_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "status": "error",
+            "code": exc.status_code,
+            "message": exc.detail,
+            "details": {}
+        }
+    )
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "status": "error",
+            "code": 500,
+            "message": "Wystąpił nieoczekiwany błąd serwera",
+            "details": {"error": str(exc)}
+        }
+    )
+
 def seed_rooms():
     db = SessionLocal()
     if db.query(models.Room).count() == 0:
@@ -101,10 +127,9 @@ async def confirm_booking(
     request: Request, 
     first_name: str = Form(...),    
     last_name: str = Form(...),     
-    contact_email: str = Form(...), 
     booking_date: str = Form(...), 
     booking_time: str = Form(...), 
-    contact_info: str = Form(...),
+    status: str = Form("confirmed"), 
     db: Session = Depends(get_db)
 ):
     try:
@@ -114,34 +139,44 @@ async def confirm_booking(
 
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_email = payload.get("sub")
-        
         user = db.query(models.User).filter(models.User.email == user_email).first()
 
-        info = f"Klient: {first_name} {last_name}, Data: {booking_date} {booking_time}"
+        start_dt = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
 
         new_booking = models.Booking(
             user_id=user.id if user else 1,
             room_id=room_id,
-            status=info
+            first_name=first_name,
+            last_name=last_name,
+            start_time=start_dt,
+            end_time=start_dt + timedelta(hours=1),
+            status=status
         )
         db.add(new_booking)
         db.commit()
-        return "OK" 
+        return RedirectResponse(url="/my_bookings", status_code=303) 
     except Exception as e:
         return Response(content=str(e), status_code=400)
     
 @app.get("/my_bookings", response_class=HTMLResponse)
 async def my_bookings(request: Request, db: Session = Depends(get_db)):
-   
     token = request.cookies.get("access_token")
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    user_email = payload.get("sub")
-    user = db.query(models.User).filter(models.User.email == user_email).first()
-
-    bookings = db.query(models.Booking).filter(models.Booking.user_id == user.id).all()
+    if not token:
+        raise HTTPException(status_code=401, detail="Brak tokena dostępu. Zaloguj się.")[cite: 1]
     
-    return templates.TemplateResponse("my_bookings.html", {"request": request, "bookings": bookings})
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_email = payload.get("sub")
+        user = db.query(models.User).filter(models.User.email == user_email).first()
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="Użytkownik nie istnieje")
 
+        bookings = db.query(models.Booking).filter(models.Booking.user_id == user.id).all()
+        return templates.TemplateResponse("my_bookings.html", {"request": request, "bookings": bookings})
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Sesja wygasła")
+    
 @app.delete("/delete_booking/{booking_id}")
 async def delete_booking(booking_id: int, db: Session = Depends(get_db)):
     booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
@@ -151,3 +186,41 @@ async def delete_booking(booking_id: int, db: Session = Depends(get_db)):
     db.delete(booking)
     db.commit()
     return {"message": "Usunięto pomyślnie"}
+
+@app.get("/edit_booking/{booking_id}", response_class=HTMLResponse)
+async def edit_booking_page(booking_id: int, request: Request, db: Session = Depends(get_db)):
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Nie znaleziono rezerwacji")
+    
+    return templates.TemplateResponse("edit_booking.html", {"request": request, "booking": booking})
+
+from datetime import datetime, timedelta
+
+@app.post("/update_booking/{booking_id}")
+async def update_booking(
+    booking_id: int, 
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    status: str = Form(...),
+    booking_date: str = Form(...),
+    booking_time: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        return Response(content="Nie znaleziono rezerwacji", status_code=404)
+
+    booking.first_name = first_name
+    booking.last_name = last_name
+    booking.status = status
+
+    try:
+        new_datetime = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
+        booking.start_time = new_datetime
+        booking.end_time = new_datetime + timedelta(hours=1)
+    except ValueError:
+        return Response(content="Błędny format daty lub godziny", status_code=400)
+
+    db.commit()
+    return RedirectResponse(url="/my_bookings", status_code=303)
